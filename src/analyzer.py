@@ -2,29 +2,54 @@ import pandas as pd
 import json
 from pathlib import Path
 from datetime import datetime
-import time  # New import
+import time
+import pytz
 
 
 class MusicAnalyzer:
-    def __init__(self, data_dir='data'):
+    def __init__(self, data_dir='data', timezone='America/New_York'):
         self.data_dir = Path(data_dir)
+        self.local_timezone = pytz.timezone(timezone)
     
     def process_recently_played(self, recent_tracks):
-        """Process recently played tracks into a DataFrame"""
+        """Process recently played tracks into a DataFrame with timezone debugging"""
         tracks_data = []
         
+        # Print first track timing for debugging
+        first_track = recent_tracks['items'][0]
+        raw_time = first_track['played_at']
+        print("\nTimezone Debugging:")
+        print(f"Raw timestamp from Spotify: {raw_time}")
+        
+        utc_time = datetime.strptime(raw_time, '%Y-%m-%dT%H:%M:%S.%fZ')
+        utc_time = utc_time.replace(tzinfo=pytz.UTC)
+        print(f"UTC time: {utc_time}")
+        
+        local_time = utc_time.astimezone(self.local_timezone)
+        print(f"Local time (Pacific): {local_time}")
+        print(f"Current local timezone: {self.local_timezone}")
+        
         for item in recent_tracks['items']:
+            utc_time = datetime.strptime(item['played_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            utc_time = utc_time.replace(tzinfo=pytz.UTC)
+            local_time = utc_time.astimezone(self.local_timezone)
+            
             track_data = {
                 'track_name': item['track']['name'],
                 'artist_name': item['track']['artists'][0]['name'],
-                'played_at': datetime.strptime(item['played_at'], '%Y-%m-%dT%H:%M:%S.%fZ'),
+                'played_at': local_time,
                 'album_name': item['track']['album']['name'],
                 'duration_ms': item['track']['duration_ms'],
                 'popularity': item['track']['popularity']
             }
             tracks_data.append(track_data)
-            
-        return pd.DataFrame(tracks_data)
+        
+        df = pd.DataFrame(tracks_data)
+        # Print first few timestamps after conversion
+        print("\nFirst few converted timestamps:")
+        print(df['played_at'].head())
+        
+        return df
     
     def analyze_listening_patterns(self, df):
         """Analyze listening patterns from DataFrame"""
