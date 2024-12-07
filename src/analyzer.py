@@ -123,28 +123,6 @@ class MusicAnalyzer:
             
         return patterns
 
-    def analyze_genres(self, df, spotify_client):
-        """Analyze genre distribution"""
-        genre_counts = {}
-        total_artists = len(df['artist_name'].unique())
-        print(f"\nAnalyzing genres for {total_artists} artists...")
-        
-        for i, artist_name in enumerate(df['artist_name'].unique()):
-            try:
-                print(f"Processing {i+1}/{total_artists}: {artist_name}")
-                results = spotify_client.sp.search(artist_name, type='artist', limit=1)
-                if results['artists']['items']:
-                    artist_id = results['artists']['items'][0]['id']
-                    genres = spotify_client.get_artist_genres(artist_id)
-                    for genre in genres:
-                        genre_counts[genre] = genre_counts.get(genre, 0) + 1
-                time.sleep(0.1)
-            except Exception as e:
-                print(f"Error processing {artist_name}: {str(e)}")
-                continue
-                
-        return dict(sorted(genre_counts.items(), key=lambda x: x[1], reverse=True))
-
     def analyze_time_patterns(self, df):
         """Analyze listening patterns by time of day"""
         if 'played_at' not in df.columns:
@@ -240,16 +218,23 @@ class MusicAnalyzer:
         
         print("Successfully created visualizations in 'visualizations' directory!")
 
-    def analyze_genre_trends(self, df, spotify_client):
-        """Analyze how genre preferences change over time"""
-        # First, get genres for all artists
+    def analyze_genre_trends(self, df, spotify_client, top_n=100):
+        """Analyze how genre preferences change over time
+        Args:
+            df: DataFrame with listening history
+            spotify_client: SpotifyClient instance
+            top_n: Number of top artists to analyze (default: 100)
+        """
+        # Get only top N artists to analyze
+        top_artists = df['artist_name'].value_counts().head(top_n).index
         artist_genres = {}
-        total_artists = len(df['artist_name'].unique())
         
-        print("Fetching genre information...")
-        for i, artist in enumerate(df['artist_name'].unique()):
+        print(f"\nAnalyzing genres for top {top_n} artists...")
+        print(f"This represents {(len(top_artists)/df['artist_name'].nunique()*100):.1f}% of your unique artists")
+        
+        for i, artist in enumerate(top_artists):
             try:
-                print(f"Processing {i+1}/{total_artists}: {artist}")
+                print(f"Processing {i+1}/{top_n}: {artist}")
                 results = spotify_client.sp.search(artist, type='artist', limit=1)
                 if results['artists']['items']:
                     artist_genres[artist] = results['artists']['items'][0]['genres']
@@ -257,7 +242,7 @@ class MusicAnalyzer:
             except Exception as e:
                 print(f"Error processing {artist}: {str(e)}")
         
-        # Add genres to dataframe
+        # Add genres to dataframe but only for analyzed artists
         df['genres'] = df['artist_name'].map(lambda x: artist_genres.get(x, []))
         
         # Analyze genres by year
@@ -268,11 +253,13 @@ class MusicAnalyzer:
             for genres in year_df['genres']:
                 for genre in genres:
                     genre_counts[genre] = genre_counts.get(genre, 0) + 1
+            # Only keep top 10 genres per year
             genre_trends[year] = dict(sorted(genre_counts.items(), 
                                            key=lambda x: x[1], 
                                            reverse=True)[:10])
         
         return genre_trends
+
     def create_ascii_graphs(self, df):
         """Create ASCII visualizations for terminal display"""
         # Top Artists ASCII Bar Chart

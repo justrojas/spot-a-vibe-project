@@ -76,17 +76,19 @@ def analyze_historical_data():
         print("- listening_heatmap.png (Activity by Hour and Year)")
         print("- top_artists_by_year.png (Artist Trends)")
         print("- monthly_patterns.png (Monthly Listening Patterns)")
-        
-        # Genre Analysis
+
+        # In the genre analysis section of test_historical.py:
         print("\n🎸 Analyzing Genre Trends...")
         client = SpotifyClient()
-        genre_trends = analyzer.analyze_genre_trends(df, client)
-        for year, genres in genre_trends.items():
+        genre_trends = analyzer.analyze_genre_trends(df, client, top_n=100)  # Processing top 100 artists
+
+        print("\n📊 Genre Analysis by Year")
+        print("------------------------")
+        for year in sorted(genre_trends.keys()):
             print(f"\n{year} Top Genres:")
-            for genre, count in list(genres.items())[:5]:
-                print(f"- {genre}: {count} plays")
-    else:
-        print("No valid tracks found in the data")
+            for genre, count in list(genre_trends[year].items())[:5]:
+                bar_length = int((count / max(genre_trends[year].values())) * 20)
+                print(f"- {genre:<20} {'█' * bar_length} ({count} plays)")
 
 if __name__ == "__main__":
     analyze_historical_data()

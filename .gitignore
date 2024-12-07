@@ -1,0 +1,22 @@
+# Virtual Environment
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables
+.env
+config/settings.py
+
+# Output files
+output/visualizations/*
+!output/visualizations/.gitkeep
+
+# IDE specific files
+.vscode/
+.idea/
+
+# macOS
+.DS_Store

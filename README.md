@@ -1,15 +1,21 @@
-# markdown file for spot-a-vibe
+# Spotify Listening History Analyzer
 
-To install required packages run this command 
--> pip install -r requirements.txt
--------------------------------------------------
-### DATA LIMITATIONS
-Spotify API only shows recent history
-To get full history, request it from spotify by, 
+## Setup
+1. Create virtual environment: `python -m venv venv`
+2. Activate environment: `source venv/bin/activate`
+3. Install dependencies: `pip install -r requirements.txt`
+4. Set up Spotify API credentials in `.env`
 
-Go to spotify account overview page (www.spotfiy.com/account)
- -> Account
- -> Account Privacy
- -> Download your data (extended streaming history)
+## Usage
+- Analyze recent history: `python -m tests.test_analysis`
+- Analyze full history: `python -m tests.test_historical`
+- Generate visualizations: `python -m tests.test_visualizations`
+
+## Project Structure
+- `src/`: Core source code
+- `tests/`: Test files
+- `output/`: Generated visualizations and data
+- `config/`: Configuration files
+
 
 The preparation time is about a month and files will be sent to you in json format
