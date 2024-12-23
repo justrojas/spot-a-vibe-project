@@ -22,7 +22,7 @@ def test_historical_data():
     
     # Load all JSON files from the history directory
     history_data = []
-    history_dir = Path('data/history')
+    history_dir = Path('/Users/kite/spot-a-vibe-project/backend/data/history')
     
     print("\n📂 Loading Data Files")
     print("-" * 20)
